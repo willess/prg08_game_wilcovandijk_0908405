@@ -17,3 +17,19 @@ Er is een behaviour interface. shrink.ts en move.ts implementeren deze interface
 In game.ts zijn alle properties private. In player.ts zijn properties zoals speed etc  private gemaakt. Dit hoeft alleen player te weten. player.ts en coin.ts extenden allebei van gameobject. In behaviour.ts staat aangegeven welke properties en methods de classes move en shrink moeten hebben.
 
 ![alt text](./classDiagram.png)
+
+Peer review: Tom Vrijmoet
+
+In Game.ts staan 2 private variabelen, coinHeight en coinWidth. Deze variabelen vul je vervolgens hard coded en worden daarna doorgegeven bij coin = new Coin.
+Dit kan sneller door bijvoorbeeld de vaste waarde er meteen aan te hangen bij het declareren. Deze declaratie zou ook beter passen in coin.ts.
+
+In player.ts zitten nog alle move functionaliteiten. Deze functionaliteiten zouden goed in een behaviour kunnen. Dit zal voor een stuk schonere code zorgen.
+Nu staan er nog veel if statements en moeilijk te begrijpen code. Dit kan allemaal worden weggehaald zodra je de behaviours in orde maakt.
+Je zou dan alleen nog maar de this.behaviour.update() nodig hebben in Move().
+
+De functie shrinkplayer staat nu in Game.ts, deze functie zou ook prima in Shrinking.ts kunnen staan. Dit zou beter staan hier. 
+Het is een logischere plek om neer te zetten, en ook dit zal game.ts weer wat opschonen.
+
+Je interface (behaviour.ts) heeft ook nog een onMove() functie die verder nergens wordt aangeroepen. Niet dat dit veel schade kan doen maar het zou wel netter zijn als deze niet bestond.
+
+De rest ziet er aardig duidelijk uit.
