@@ -4,9 +4,14 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var GameObject = (function () {
-    function GameObject(str, container, x, y, width, height) {
-        this.x = x;
-        this.y = y;
+    function GameObject(str, container, x, y, width, height, g) {
+        this.xspeed = 0;
+        this.yspeed = 0;
+        this.speedmultiplier = 1;
+        this.direction = 1;
+        this.game = g;
+        this.posX = x;
+        this.posY = y;
         this.width = width;
         this.height = height;
         this.div = document.createElement(str);
@@ -14,7 +19,7 @@ var GameObject = (function () {
         this.draw();
     }
     GameObject.prototype.draw = function () {
-        this.div.style.transform = "translate(" + this.x + "px," + this.y + "px)";
+        this.div.style.transform = "translate(" + this.posX + "px," + this.posY + "px)";
     };
     GameObject.prototype.deleteDiv = function () {
         this.div.remove();
@@ -23,40 +28,122 @@ var GameObject = (function () {
 }());
 var Coin = (function (_super) {
     __extends(Coin, _super);
-    function Coin(container, posX, posY, coinWidth, coinHeight) {
-        _super.call(this, "coin", container, posX, posY, coinWidth, coinHeight);
+    function Coin(container, posX, posY, coinWidth, coinHeight, g) {
+        _super.call(this, "coin", container, posX, posY, coinWidth, coinHeight, g);
     }
     return Coin;
 }(GameObject));
+var Enemy = (function (_super) {
+    __extends(Enemy, _super);
+    function Enemy(container, posX, posY, coinWidth, coinHeight, g) {
+        _super.call(this, "enemy", container, posX, posY, coinWidth, coinHeight, g);
+        g.player.subscribe(this);
+        var arrayList = ["trump", "putin", "merkel", "erdogan"];
+        this.backgroundImage = arrayList[Math.floor(Math.random() * arrayList.length)];
+        this.div.style.backgroundImage = "url(./images/" + this.backgroundImage + ".gif)";
+        this.speedX = (Math.random() * 4);
+        this.speedY = (Math.random() * 4);
+        this.container = container;
+    }
+    Enemy.prototype.notify = function () {
+        var _this = this;
+        console.log("Player is Shrinking!!!!!");
+        this.div.style.backgroundImage = "none";
+        this.div.style.animation = "red-flashing 0.3s infinite";
+        this.div.style.webkitAnimation = "red-flashing 0.3s infinite";
+        this.div.style.animation = "red-flashing 0.25s infinite";
+        setTimeout(function () {
+            _this.div.style.animation = "none";
+            _this.div.style.backgroundImage = "url(./images/" + _this.backgroundImage + ".gif)";
+        }, 1700);
+    };
+    Enemy.prototype.move = function () {
+        if (this.posY + 200 > this.container.clientHeight || this.posY < 0) {
+            this.speedY *= -1;
+        }
+        if (this.posX + 200 > this.container.clientWidth || this.posX < 0) {
+            this.speedX *= -1;
+        }
+        this.posX += this.speedX;
+        this.posY += this.speedY;
+        this.div.style.transform = "translate(" + this.posX + "px," + this.posY + "px)";
+    };
+    return Enemy;
+}(GameObject));
+var Grow = (function () {
+    function Grow(p) {
+        this.player = p;
+    }
+    Grow.prototype.update = function () {
+        this.player.width += 1;
+        this.player.height += 1;
+        this.player.div.style.width = this.player.width + "px";
+        this.player.div.style.height = this.player.height + "px";
+        this.onMove();
+    };
+    Grow.prototype.onShrink = function () {
+        this.player.behaviour = new Shrink(this.player);
+    };
+    Grow.prototype.onMove = function () {
+        this.player.behaviour = new Move(this.player);
+    };
+    Grow.prototype.onGrow = function () {
+        this.player.behaviour = new Grow(this.player);
+    };
+    return Grow;
+}());
 var Game = (function () {
     function Game() {
         var _this = this;
         this.score = 0;
         this.coinArray = [];
+        this.gameObjects = new Array();
         var container = document.getElementById("container");
-        this.player = new Player(container, 65, 68, 87, 83);
-        for (var i = 0; i < 50; i++) {
-            this.posX = (Math.random() * (window.innerWidth));
-            this.posY = (Math.random() * (window.innerHeight));
-            this.coinWidth = 15;
-            this.coinHeight = 15;
-            this.coin = new Coin(container, this.posX, this.posY, this.coinWidth, this.coinHeight);
-            this.coinArray.push(this.coin);
+        this.player = new Player(container, 65, 68, 87, 83, this);
+        for (var i = 0; i < 500; i++) {
+            var x = (Math.random() * (container.clientWidth));
+            var y = (Math.random() * (container.clientHeight));
+            this.coin = new Coin(container, x, y, 15, 15, this);
+            this.gameObjects.push(this.coin);
+        }
+        for (var i = 0; i < 12; i++) {
+            var x = (Math.random() * (container.clientWidth));
+            var y = (Math.random() * (container.clientHeight));
+            this.enemy = new Enemy(container, x, y, 200, 200, this);
+            this.gameObjects.push(this.enemy);
         }
         requestAnimationFrame(function () { return _this.gameLoop(); });
     }
     Game.prototype.gameLoop = function () {
         this.player.move();
-        for (var _i = 0, _a = this.coinArray; _i < _a.length; _i++) {
-            var coin = _a[_i];
-            if (Utils.checkCollision(this.player, coin)) {
-                for (var i = 0; i < this.coinArray.length; i++) {
-                    if (coin == this.coinArray[i]) {
-                        this.score++;
-                        this.updateScore();
-                        this.coinArray.splice(i, 1);
-                        coin.deleteDiv();
+        for (var _i = 0, _a = this.gameObjects; _i < _a.length; _i++) {
+            var o = _a[_i];
+            if (o instanceof Enemy) {
+                o.move();
+            }
+            if (Utils.checkCollision(this.player, o)) {
+                this.player.onGrow(1);
+                if (o instanceof Coin) {
+                    for (var i = 0; i < this.gameObjects.length; i++) {
+                        if (o == this.gameObjects[i]) {
+                            this.sound = new Howl({
+                                urls: ["sound/confirm.mp3"],
+                                sprite: {
+                                    confirm: [0, 150000],
+                                }
+                            });
+                            this.sound.play('confirm');
+                            this.score++;
+                            this.updateScore();
+                            this.gameObjects.splice(i, 1);
+                            o.deleteDiv();
+                            o = null;
+                        }
                     }
+                }
+                if (o instanceof Enemy) {
+                    this.endGame();
+                    cancelAnimationFrame(1);
                 }
             }
         }
@@ -70,6 +157,16 @@ var Game = (function () {
             Game.GameInstance = new Game();
         }
         return Game.GameInstance;
+    };
+    Game.prototype.endGame = function () {
+        for (var _i = 0, _a = this.gameObjects; _i < _a.length; _i++) {
+            var o = _a[_i];
+            for (var i = 0; i < this.gameObjects.length; i++) {
+                this.gameObjects.splice(i, 1);
+                o = null;
+            }
+        }
+        console.log('end game!');
     };
     return Game;
 }());
@@ -87,20 +184,27 @@ var Move = (function () {
     };
     Move.prototype.onMove = function () {
     };
+    Move.prototype.onGrow = function () {
+        this.player.behaviour = new Grow(this.player);
+    };
     return Move;
 }());
 var Player = (function (_super) {
     __extends(Player, _super);
-    function Player(container, left, right, up, down) {
-        _super.call(this, "player", container, 1000, 1000, 50, 50);
+    function Player(container, left, right, up, down, g) {
+        _super.call(this, "player", container, 1000, 1000, 50, 50, g);
+        this.observers = [];
         this.spaceKey = 32;
-        this.lastkey = 0;
         this.leftSpeed = 0;
         this.rightSpeed = 0;
         this.downSpeed = 0;
         this.upSpeed = 0;
-        this.posX = window.innerWidth / 2 - 50;
-        this.posY = window.innerHeight / 2 - 50;
+        this.speedmultiplier = 2;
+        this.container = container;
+        this.posX = (this.container.clientWidth / 2) + (window.innerWidth / 2) - 25;
+        this.posY = (this.container.clientHeight / 2) + (window.innerHeight / 2) - 25;
+        this.containerX = this.container.clientWidth - (this.container.clientWidth * 1.5);
+        this.containerY = this.container.clientHeight - (this.container.clientHeight * 1.5);
         this.upkey = up;
         this.downkey = down;
         this.leftkey = left;
@@ -109,47 +213,53 @@ var Player = (function (_super) {
         window.addEventListener("keydown", this.onKeyDown.bind(this));
         window.addEventListener("keyup", this.onKeyUp.bind(this));
     }
+    Player.prototype.subscribe = function (o) {
+        this.observers.push(o);
+    };
+    Player.prototype.unsubscribe = function () {
+    };
     Player.prototype.onShrink = function () {
+        for (var _i = 0, _a = this.observers; _i < _a.length; _i++) {
+            var o = _a[_i];
+            o.notify();
+        }
         this.behaviour.onShrink();
     };
     Player.prototype.onMove = function () {
         this.behaviour.onMove();
     };
-    Player.prototype.shrinkPlayer = function (s) {
-        this.width -= s;
-        this.height -= s;
-        this.div.style.width = this.width + "px";
-        this.div.style.height = this.height + "px";
-        console.log(this);
+    Player.prototype.onGrow = function (grow) {
+        this.behaviour.onGrow();
+    };
+    Player.prototype.onWindowClick = function (e) {
+        var a = e.clientX + e.clientX;
+        Utils.setSpeed(this, e.clientX - this.posX, e.clientY - this.posY);
     };
     Player.prototype.onKeyDown = function (event) {
         switch (event.keyCode) {
             case this.upkey:
                 if (this.posY > 0) {
-                    this.upSpeed = 7;
+                    this.upSpeed = 5;
                     this.onMove();
                 }
-                this.lastkey = 0;
                 break;
             case this.downkey:
-                if (this.posY < window.innerHeight - this.height) {
-                    this.downSpeed = 7;
+                if (this.posY < this.container.clientHeight - this.height) {
+                    this.downSpeed = 5;
                     this.onMove();
                 }
                 break;
             case this.leftkey:
                 if (this.posX > 0) {
-                    this.leftSpeed = 7;
+                    this.leftSpeed = 5;
                     this.onMove();
                 }
-                this.lastkey = 1;
                 break;
             case this.rightkey:
-                if (this.posX < window.innerWidth - this.width) {
-                    this.rightSpeed = 7;
+                if (this.posX < this.container.clientWidth - this.width) {
+                    this.rightSpeed = 5;
                     this.onMove();
                 }
-                this.lastkey = 2;
                 break;
             case this.spaceKey:
                 this.onShrink();
@@ -174,20 +284,25 @@ var Player = (function (_super) {
     };
     Player.prototype.move = function () {
         this.behaviour.update();
+        this.posX += this.xspeed;
+        this.posY += this.yspeed;
         this.posX = this.posX - this.leftSpeed + this.rightSpeed;
         this.posY = this.posY - this.upSpeed + this.downSpeed;
-        if (this.posX >= window.innerWidth - this.width) {
+        this.containerX = this.containerX + this.leftSpeed - this.rightSpeed;
+        this.containerY = this.containerY + this.upSpeed - this.downSpeed;
+        if (this.posX >= this.container.clientWidth - this.width) {
             this.rightSpeed = 0;
         }
         if (this.posX < 0) {
             this.leftSpeed = 0;
         }
-        if (this.posY >= window.innerHeight - this.height) {
+        if (this.posY >= this.container.clientHeight - this.height) {
             this.downSpeed = 0;
         }
         if (this.posY < 0) {
             this.upSpeed = 0;
         }
+        this.container.style.transform = "translate(" + this.containerX + "px," + this.containerY + "px)";
         this.div.style.transform = "translate(" + this.posX + "px," + this.posY + "px)";
     };
     return Player;
@@ -202,7 +317,10 @@ var Shrink = (function () {
         console.log(this.timer);
         document.getElementById("shrinkText").innerHTML = "Shrinking --- " + this.timer;
         if (this.timer < 1) {
-            this.player.shrinkPlayer(5);
+            this.player.width -= 5;
+            this.player.height -= 5;
+            this.player.div.style.width = this.player.width + "px";
+            this.player.div.style.height = this.player.height + "px";
             this.onMove();
         }
     };
@@ -213,13 +331,23 @@ var Shrink = (function () {
         document.getElementById("shrinkText").innerHTML = "Press space to shrink";
         this.player.behaviour = new Move(this.player);
     };
+    Shrink.prototype.onGrow = function () {
+        this.player.behaviour = new Grow(this.player);
+    };
     return Shrink;
 }());
 var Utils = (function () {
     function Utils() {
     }
+    Utils.setSpeed = function (go, xdist, ydist) {
+        var distance = Math.sqrt(xdist * xdist + ydist * ydist);
+        go.xspeed = xdist / distance;
+        go.yspeed = ydist / distance;
+        go.xspeed *= go.speedmultiplier;
+        go.yspeed *= go.speedmultiplier;
+    };
     Utils.checkCollision = function (p, c) {
-        if (p.posX < c.x + c.width && p.posX + p.width > c.x && p.posY < c.y + c.height + c.height && p.height + p.posY > c.y) {
+        if (p.posX < c.posX + c.width && p.posX + p.width > c.posX && p.posY < c.posY + c.height + c.height && p.height + p.posY > c.posY) {
             return true;
         }
         return false;

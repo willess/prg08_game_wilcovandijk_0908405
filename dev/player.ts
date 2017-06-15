@@ -1,12 +1,10 @@
 /// <reference path="gameObject.ts" />
 
 
-class Player extends GameObject {
+class Player extends GameObject implements Observable {
 
     public behaviour: Behaviour;
-
-    public posX: number;
-    public posY: number;
+    public observers: Array<Observer> = [];
 
     //walk keys player
     public downkey : number;
@@ -16,22 +14,31 @@ class Player extends GameObject {
 
     private spaceKey :number = 32;
     
-    //remember last key 
-    private lastkey: number = 0; 
-    
     //speed player, start all at 0
     private leftSpeed : number = 0;
     private rightSpeed : number = 0;
     private downSpeed : number = 0;
     private upSpeed : number = 0;
 
+    private container : HTMLElement;
+    public containerX: number;
+    public containerY: number;
 
-    constructor(container: HTMLElement, left:number, right:number, up:number, down:number) {
-        super("player", container, 1000, 1000, 50, 50);
 
-        // position on screen
-        this.posX = window.innerWidth/2 - 50;
-        this.posY = window.innerHeight/2 - 50;
+    constructor(container: HTMLElement, left:number, right:number, up:number, down:number, g:Game) {
+        super("player", container, 1000, 1000, 50, 50, g);
+        this.speedmultiplier = 2;
+
+        this.container = container;
+
+        // startposition on screen player
+        this.posX = (this.container.clientWidth/2) + (window.innerWidth / 2) - 25;
+        this.posY = (this.container.clientHeight/2) + (window.innerHeight / 2) - 25;
+
+        // startposition on screen containerdiv
+        this.containerX = this.container.clientWidth - (this.container.clientWidth * 1.5);
+        this.containerY = this.container.clientHeight - (this.container.clientHeight * 1.5);
+
 
         //input from keyboard
         this.upkey = up;
@@ -44,25 +51,42 @@ class Player extends GameObject {
         // keyboard listener
         window.addEventListener("keydown", this.onKeyDown.bind(this));
         window.addEventListener("keyup", this.onKeyUp.bind(this));  
+
+        // this.container.addEventListener("click", (e:MouseEvent) => this.onWindowClick(e));
+
     }
 
-        private onShrink(): void {
-            //clicked spacekey
+    public subscribe(o: Observer): void {
+        this.observers.push(o);
+    }
+
+    public unsubscribe(): void {
+
+    }
+
+    private onShrink(): void {
+        for (let o of this.observers) {
+            o.notify();
+            
+        }
         this.behaviour.onShrink();
     }
 
     private onMove(): void {
         this.behaviour.onMove();
-        
     }
 
-    public shrinkPlayer(s: number) {
-        this.width -= s;
-        this.height -= s;
-        this.div.style.width = this.width + "px";
-        this.div.style.height = this.height + "px";
+    public onGrow(grow: number) {
+        this.behaviour.onGrow();
+    }
 
-        console.log(this);
+        // de beweegrichting aanpassen aan waar in het window is geklikt
+    private onWindowClick(e:MouseEvent):void {
+        // console.log(e.clientX);
+        // console.log(this.containerY);
+        let a = e.clientX + e.clientX;
+        // console.log(a);
+        Utils.setSpeed(this, e.clientX - this.posX, e.clientY - this.posY);
     }
 
         // keyboard input changes speed
@@ -70,30 +94,27 @@ class Player extends GameObject {
         switch(event.keyCode){
         case this.upkey:
         if(this.posY > 0){
-            this.upSpeed = 7;
+            this.upSpeed = 5;
             this.onMove();
         }
-            this.lastkey = 0;
             break;
         case this.downkey:
-        if(this.posY < window.innerHeight - this.height){
-            this.downSpeed = 7;
+        if(this.posY < this.container.clientHeight - this.height){
+            this.downSpeed = 5;
             this.onMove();
         }
             break;
         case this.leftkey:
         if (this.posX > 0){
-            this.leftSpeed = 7;
+            this.leftSpeed = 5;
             this.onMove();
         }        
-            this.lastkey = 1;
             break;
         case this.rightkey:
-        if (this.posX < window.innerWidth - this.width){
-            this.rightSpeed = 7;
+        if (this.posX < this.container.clientWidth - this.width){
+            this.rightSpeed = 5;
             this.onMove();
         }            
-            this.lastkey = 2;
             break;
         case this.spaceKey:
             this.onShrink();
@@ -124,11 +145,21 @@ class Player extends GameObject {
 
         this.behaviour.update();
 
+        this.posX += this.xspeed;
+        this.posY += this.yspeed;
+
+        // this.direction = (this.xspeed < 0) ? 1 : -1;
+        // this.div.style.transform = "translate("+this.posX+"px, "+this.posY+"px) scale("+this.direction+",1)";
+        // console.log(this.posX);
+
         this.posX = this.posX - this.leftSpeed + this.rightSpeed;
         this.posY = this.posY - this.upSpeed + this.downSpeed;
 
-                //check right
-        if(this.posX >= window.innerWidth - this.width){
+        this.containerX = this.containerX + this.leftSpeed - this.rightSpeed;
+        this.containerY = this.containerY + this.upSpeed - this.downSpeed;
+
+        //check right
+        if(this.posX >= this.container.clientWidth - this.width){
             this.rightSpeed = 0;
         }
         //check left
@@ -136,13 +167,15 @@ class Player extends GameObject {
             this.leftSpeed = 0;
         }
         //check down
-        if(this.posY >= window.innerHeight - this.height){
+        if(this.posY >= this.container.clientHeight - this.height){
             this.downSpeed = 0;
         }
         //check up
         if(this.posY < 0){
             this.upSpeed = 0;
         }
+
+        this.container.style.transform ="translate("+this.containerX+"px," +this.containerY + "px)";
 
         this.div.style.transform ="translate(" +this.posX + "px," + this.posY + "px)";
     }

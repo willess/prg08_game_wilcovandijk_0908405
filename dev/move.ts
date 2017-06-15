@@ -19,4 +19,8 @@ class Move implements Behaviour {
     onMove() {
         
     }
+
+    onGrow() {
+        this.player.behaviour = new Grow(this.player);
+    }
 }

@@ -3,5 +3,6 @@ interface Behaviour {
     update() : void;
     onShrink() : void;
     onMove() :void;
+    onGrow() : void;
 
 }

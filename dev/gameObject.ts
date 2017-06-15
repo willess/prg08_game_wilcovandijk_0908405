@@ -1,17 +1,26 @@
 class GameObject {
 
     public div:HTMLElement;
-    public x:number;
-    public y:number;
+    public posX:number;
+    public posY:number;
     
     public width:number;
     public height:number;
 
-    constructor(str:string, container: HTMLElement, x:number, y:number, width:number, height:number) {
+    public xspeed:number = 0;
+    public yspeed:number = 0;
+    public speedmultiplier:number = 1;
+    public direction:number = 1;
+
+    protected game: Game;
+
+    constructor(str:string, container: HTMLElement, x:number, y:number, width:number, height:number, g:Game) {
+
+        this.game = g;
 
         //get x and y
-        this.x = x;
-        this.y = y;
+        this.posX = x;
+        this.posY = y;
 
         //get width and height
         this.width = width;
@@ -25,7 +34,7 @@ class GameObject {
     }
 
     public draw():void {
-        this.div.style.transform ="translate(" +this.x + "px," + this.y + "px)";
+        this.div.style.transform ="translate(" +this.posX + "px," + this.posY + "px)";
     }
 
     public deleteDiv() {
