@@ -70,6 +70,14 @@ var Enemy = (function (_super) {
     };
     return Enemy;
 }(GameObject));
+var Enums;
+(function (Enums) {
+    (function (Dimension) {
+        Dimension[Dimension["playerHeight"] = 50] = "playerHeight";
+        Dimension[Dimension["playerWidth"] = 50] = "playerWidth";
+    })(Enums.Dimension || (Enums.Dimension = {}));
+    var Dimension = Enums.Dimension;
+})(Enums || (Enums = {}));
 var Grow = (function () {
     function Grow(p) {
         this.player = p;
@@ -99,7 +107,7 @@ var Game = (function () {
         this.coinArray = [];
         this.gameObjects = new Array();
         var container = document.getElementById("container");
-        this.player = new Player(container, 65, 68, 87, 83, this);
+        this.player = new Player(container, 65, 68, 87, 83, Enums.Dimension.playerHeight, Enums.Dimension.playerWidth, this);
         for (var i = 0; i < 500; i++) {
             var x = (Math.random() * (container.clientWidth));
             var y = (Math.random() * (container.clientHeight));
@@ -191,8 +199,8 @@ var Move = (function () {
 }());
 var Player = (function (_super) {
     __extends(Player, _super);
-    function Player(container, left, right, up, down, g) {
-        _super.call(this, "player", container, 1000, 1000, 50, 50, g);
+    function Player(container, left, right, up, down, playerHeight, playerWidth, g) {
+        _super.call(this, "player", container, 1000, 1000, playerWidth, playerHeight, g);
         this.observers = [];
         this.spaceKey = 32;
         this.leftSpeed = 0;

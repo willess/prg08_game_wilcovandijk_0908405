@@ -18,7 +18,7 @@ class Game {
 
         let container:HTMLElement = document.getElementById("container");
 
-        this.player = new Player(container, 65, 68, 87, 83, this);
+        this.player = new Player(container, 65, 68, 87, 83, Enums.Dimension.playerHeight, Enums.Dimension.playerWidth, this);
 
         for(var i = 0; i < 500; i++) {
             let x = (Math.random() * (container.clientWidth));

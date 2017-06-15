@@ -1,4 +1,4 @@
-class GameObject {
+abstract class GameObject {
 
     public div:HTMLElement;
     public posX:number;

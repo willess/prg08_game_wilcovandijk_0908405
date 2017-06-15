@@ -25,8 +25,8 @@ class Player extends GameObject implements Observable {
     public containerY: number;
 
 
-    constructor(container: HTMLElement, left:number, right:number, up:number, down:number, g:Game) {
-        super("player", container, 1000, 1000, 50, 50, g);
+    constructor(container: HTMLElement, left:number, right:number, up:number, down:number, playerHeight: number, playerWidth: number, g:Game) {
+        super("player", container, 1000, 1000, playerWidth, playerHeight, g);
         this.speedmultiplier = 2;
 
         this.container = container;
@@ -67,7 +67,7 @@ class Player extends GameObject implements Observable {
     private onShrink(): void {
         for (let o of this.observers) {
             o.notify();
-            
+
         }
         this.behaviour.onShrink();
     }
