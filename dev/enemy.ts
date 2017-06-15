@@ -3,6 +3,8 @@
 
 class Enemy extends GameObject implements Observer {
 
+    //speed wordt in al in gameobject aangemaakt, waarom gebruik je die niet?
+
     private speedX: number;
     private speedY: number;
 
