@@ -33,3 +33,6 @@ Het is een logischere plek om neer te zetten, en ook dit zal game.ts weer wat op
 Je interface (behaviour.ts) heeft ook nog een onMove() functie die verder nergens wordt aangeroepen. Niet dat dit veel schade kan doen maar het zou wel netter zijn als deze niet bestond.
 
 De rest ziet er aardig duidelijk uit.
+
+<h1> Peer review: Lennart van Welzen <h1>
+<p>wejo gekke game<p>
