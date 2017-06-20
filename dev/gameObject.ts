@@ -1,5 +1,8 @@
 abstract class GameObject {
 
+    //Je zou je x, y, width en height protected kunnen maken en vervolgens een functie maken die deze waarden ophaalt.
+    //Deze functies kan je dan aanroepen in main.ts. En dat kan ook van elke class/instance die overerft van GameObject.ts
+
     public div:HTMLElement;
     public posX:number;
     public posY:number;
@@ -40,4 +43,6 @@ abstract class GameObject {
     public deleteDiv() {
         this.div.remove();
     }
+
+    //een functie voor getX. getY, getWidth, getHeight
 }

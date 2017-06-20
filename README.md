@@ -33,3 +33,24 @@ Het is een logischere plek om neer te zetten, en ook dit zal game.ts weer wat op
 Je interface (behaviour.ts) heeft ook nog een onMove() functie die verder nergens wordt aangeroepen. Niet dat dit veel schade kan doen maar het zou wel netter zijn als deze niet bestond.
 
 De rest ziet er aardig duidelijk uit.
+
+<h1> Peer review: Lennart van Welzen <h1>
+<p>De game is speelbaar, er was nog niet helemaal duidelijk wat de controls waren, misschien handig om een beginscherm te maken waarin dit uitgelegd wordt. Het is ook nog niet duidelijk wat shrink doet. Voor de netheid van je code zou je je behaviour in een aparte map kunnen zetten. Daarnaastt heb ik nog wat comments geplaatst in de code.<p>
+
+<h1>Checklist<h1>
+
+<p>Interface<p>
+<p>Static Utility Method [ja]<p>
+<p>Singleton [nee]<p>
+<p>Stragety [ja] <p>
+<p>Encapsulation [ja]<p>
+<p>Composition [ja]<p>
+<p>Inheritance [ja]<p>
+<p>Polyphorism []<p>
+<p>Observer [ja]<p>
+<p>Namespace [ja]<p>
+<p>Enumerations [ja]<p>
+
+<h1>Tot slot<h1>
+<p>Concept van de game is leuk, echter moet het nog wel wat meer uitgewerkt worden. Betere uitleg voor het spele van
+de game zou fijn zijn. Daarnaast zitten de meeste vereiste technieken in de game verwerkt. Ik kijk er naar uit om de uiteindelijke game te spelen!<p>
